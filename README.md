@@ -2,6 +2,7 @@
 
 A production-quality webcam-based finger-tracking arcade game built using pure HTML5, CSS3, JavaScript (ES Modules), MediaPipe Hands, and the Web Audio API. No external build tools are required, making local development, deployment, and testing simple.
 
+Live Application: https://fingertrackingspacesurvivalgame.netlify.app/
 ---
 
 ## 🚀 Game Concept
