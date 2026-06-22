@@ -1,0 +1,13 @@
+{
+  "name": "space-survival-game",
+  "version": "1.0.0",
+  "description": "Finger tracking space survival game using MediaPipe Hands and Canvas",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "npx --yes http-server -p 8080 -c-1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}

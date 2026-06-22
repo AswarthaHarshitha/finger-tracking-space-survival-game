@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Evasion: Finger-Tracking Space Survival</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts for Orbitron (futuristic tech feel) and Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- MediaPipe Hands & Camera CDNs -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div id="app-container">
+        <!-- Hidden webcam video source -->
+        <video id="webcam-video" autoplay playsinline muted style="display: none;"></video>
+
+        <!-- Loading / Setup Overlay -->
+        <div id="loading-overlay" class="overlay">
+            <div class="glass-panel text-center">
+                <h1 class="glow-text">COSMIC EVASION</h1>
+                <p class="subtitle">PREPARING INTERSTELLAR INTERFACE...</p>
+                <div class="progress-bar-container">
+                    <div id="loading-progress" class="progress-bar" style="width: 0%;"></div>
+                </div>
+                <div id="loading-status">Loading MediaPipe Models...</div>
+            </div>
+        </div>
+
+        <!-- Camera Permission / Error Dialog -->
+        <div id="error-overlay" class="overlay hidden">
+            <div class="glass-panel alert-panel text-center">
+                <h2 class="glow-text-red">WEBCAM INTERFACE FAILURE</h2>
+                <p id="error-message">Unable to access your camera. This game requires a webcam to track your index finger.</p>
+                <button id="retry-camera-btn" class="btn btn-red">RETRY CAMERA ACCESS</button>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="overlay hidden">
+            <div class="glass-panel text-center main-menu">
+                <h1 class="glow-text title-large animate-pulse">COSMIC EVASION</h1>
+                <p class="tagline">Control your ship with the tip of your index finger</p>
+                
+                <div class="instructions-box">
+                    <h3>HOW TO PLAY:</h3>
+                    <ul>
+                        <li>Raise your hand in front of your webcam.</li>
+                        <li>Point your <strong>Index Finger</strong> upward.</li>
+                        <li>Move your index finger to pilot your spaceship.</li>
+                        <li>Avoid obstacles and collect glowing Power-Ups.</li>
+                    </ul>
+                </div>
+
+                <div class="calibration-preview-container">
+                    <video id="start-preview-video" autoplay playsinline muted></video>
+                    <canvas id="start-preview-canvas"></canvas>
+                    <div id="start-preview-status">Adjusting tracking sensor...</div>
+                </div>
+
+                <button id="start-game-btn" class="btn btn-primary" disabled>WAITING FOR TRACKING...</button>
+            </div>
+        </div>
+
+        <!-- Calibration Overlay (shown if hand lost or calibrating) -->
+        <div id="calibration-overlay" class="overlay hidden">
+            <div class="glass-panel text-center">
+                <h2 class="glow-text">HAND SIGNAL LOST</h2>
+                <p>Raise your index finger in front of the camera to reconnect</p>
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="overlay hidden">
+            <div class="glass-panel text-center">
+                <h1 class="glow-text-red">SHIP DESTROYED</h1>
+                <div class="score-summary">
+                    <div class="summary-item">
+                        <span class="label">FINAL SCORE</span>
+                        <span id="final-score" class="value glow-text">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">HIGH SCORE</span>
+                        <span id="high-score" class="value">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">SURVIVED</span>
+                        <span id="final-time" class="value">0.0s</span>
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button id="restart-game-btn" class="btn btn-primary">LAUNCH AGAIN</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Game HUD Overlay -->
+        <div id="game-hud" class="hud-layer hidden">
+            <!-- Left Side: Health and Shield status -->
+            <div class="hud-section hud-left">
+                <div class="hud-item health-container">
+                    <div class="bar-label">HULL INTEGRITY</div>
+                    <div class="bar-outer">
+                        <div id="health-bar" class="bar-inner health-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="hud-item shield-container hidden" id="hud-shield-container">
+                    <div class="bar-label">DEFLECTOR SHIELD</div>
+                    <div class="bar-outer">
+                        <div id="shield-bar" class="bar-inner shield-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="hud-item active-powerups" id="active-powerups-list">
+                    <!-- Power-up indicators will be dynamically injected here -->
+                </div>
+            </div>
+
+            <!-- Center: Score, High Score and Multiplier -->
+            <div class="hud-section hud-center">
+                <div class="score-display">
+                    <span id="hud-score">000,000</span>
+                </div>
+                <div class="hud-sub-row">
+                    <div class="multiplier-tag hidden" id="hud-multiplier-container">
+                        COMBO <span id="hud-multiplier">x1.0</span>
+                    </div>
+                    <div class="difficulty-level">
+                        LEVEL <span id="hud-level">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Mini PIP Camera & Mute toggle -->
+            <div class="hud-section hud-right">
+                <div class="pip-container">
+                    <video id="hud-pip-video" autoplay playsinline muted></video>
+                    <canvas id="hud-pip-canvas"></canvas>
+                    <div id="hud-pip-label">WEBCAM FEED</div>
+                </div>
+                <div class="controls-row">
+                    <button id="mute-btn" class="hud-icon-btn" title="Toggle Sound">
+                        <!-- Sound On Icon -->
+                        <svg id="sound-on-icon" viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+                        </svg>
+                        <!-- Sound Off Icon -->
+                        <svg id="sound-off-icon" viewBox="0 0 24 24" width="20" height="20" class="hidden">
+                            <path fill="currentColor" d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.44 14,18.7V20.76C15.39,20.45 16.63,19.78 17.66,18.94L20.73,22L22,20.73L4.27,3M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.48,12.43 16.5,12.22 16.5,12Z"/>
+                        </svg>
+                    </button>
+                    <button id="pause-btn" class="hud-icon-btn" title="Pause Game">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor" d="M14,19H18V5H14M6,19H10V5H6V19Z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div id="pause-overlay" class="overlay hidden">
+            <div class="glass-panel text-center">
+                <h1 class="glow-text">SYSTEM PAUSED</h1>
+                <p>Webcam tracking remains active</p>
+                <button id="resume-game-btn" class="btn btn-primary">RESUME FLIGHT</button>
+            </div>
+        </div>
+
+        <!-- Main Game Canvas -->
+        <canvas id="game-canvas"></canvas>
+    </div>
+
+    <!-- Bootstrap application -->
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
