@@ -1,8 +1,9 @@
 # Cosmic Evasion: Finger-Tracking Space Survival Game
 
-A production-quality webcam-based finger-tracking arcade game built using pure HTML5, CSS3, JavaScript (ES Modules), MediaPipe Hands, and the Web Audio API. No external build tools are required, making local development, deployment, and testing simple.
+A webcam-based finger-tracking arcade game built using pure HTML5, CSS3, JavaScript (ES Modules), MediaPipe Hands, and the Web Audio API. No external build tools are required, making local development, deployment, and testing simple.
 
-Live Application: https://fingertrackingspacesurvivalgame.netlify.app/
+**Live:** https://fingertrackingspacesurvivalgame.netlify.app/
+
 ---
 
 ## 🚀 Game Concept
@@ -15,12 +16,12 @@ Pilot your futuristic spaceship using the **tip of your index finger** in front 
 
 - **Frontend Core**: HTML5 Canvas, CSS3 Custom Properties (CSS variables), ES Modules (JavaScript).
 - **Computer Vision**: MediaPipe Hands (v0.4.x) via jsDelivr CDN.
-- **Synthesizer**: Web Audio API (procedural generation of sound effects, lasers, explosions, and cosmic background tracks, meaning zero download latency and absolute offline reliability).
+- **Synthesizer**: Web Audio API (procedural generation of sound effects, lasers, explosions, and cosmic background tracks, so no audio files need to be downloaded).
 - **Visuals**: Canvas 2D context with hardware-accelerated animations (`requestAnimationFrame`), dynamic screen shake, scrolling cyber grids, and customizable particle arrays.
 
 ### Project Layout
 ```
-space-survival-game/
+finger-tracking-space-survival-game/
 ├── package.json         # Dev server scripts
 ├── index.html           # Layout & CDNs loadout
 ├── styles.css           # Styling sheet (Glassmorphic cards, PIP preview, HUD layout)
@@ -86,9 +87,7 @@ Open `http://localhost:8080` in Chrome, Safari, or Firefox.
 
 ---
 
-## 📝 Testing Checklist
-
-Please execute these manual checks to verify features and stability:
+## 📝 Manual Test Checklist
 
 - [ ] **Webcam Permission Prompt**: Verify the camera overlay appears and requests camera permission. If denied, confirm the camera failure card renders.
 - [ ] **Tracking Stability & Jitter**: Place your index finger in the webcam feed. Verify the green skeleton outline overlays your joints and that your index finger locks without jitter.
